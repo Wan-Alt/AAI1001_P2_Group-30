@@ -31,12 +31,15 @@ execute:
 
 ## Chosen Visualisation and Story
 
-The selected data visualisation presents a comprehensive overview of the events and medal results from the **2025 World Athletics Championships**, held in Tokyo, Japan. The competition encompasses a wide range of track and field disciplines spanning multiple categories, including events for Male, Female and Mixed participants.
+Our chosen data visualization is Joel Reed's **"World Athletics Championships 2025 Tokyo"** on Tableau Public, which was recognized as Tableau's Viz of the Day in November 2025. It is a bubble chart dashboard that explores the medals and events from the 2025 World Athletics Championships held in Tokyo, Japan from 13–21 September 2025.
 
-The primary narrative conveyed by the visualisation is the breadth of competitive events held during the championship, as well as the medal winners for each respective event. The original visualisation is interactive in nature: upon hovering over individual data points, the viewer is presented with detailed information pertaining to that entry, including the athlete's **country of representation, full name, performance score, and the date on which the event was contested**. 
+At first glance, the visualization is visually pleasing and thoughtfully designed to match the theme of the dataset - the dashboard is styled to resemble a running track, which is fitting given that the subject matter is a track and field competition. This design choice gives the dashboard a strong sense of identity and makes it immediately recognizable as sports-related.
 
-Originally published on Tableau Public, the visualisation is designed to allow users to explore the championship results at a granular level, with a focus on individual athlete performances across the various events.
-<<Insert Image>>
+The visualization is **fully interactive**. Each bubble on the dashboard represents a single data point, and hovering over a bubble reveals in-depth details about a participant who finished in the top 8 positions of a given event. The tooltip displays key information including the athlete's name, country, and score/performance mark. The dashboard also covers all events held at the championship and organizes them into event group categories such as Throwing, Sprints, Jumping, and more, providing a structured way to browse the competition. Each data point encodes multiple dimensions simultaneously: **Ranking (1st, 2nd, 3rd, etc.), Game Type (Male, Female, Mixed), Game Name (100m, 200m, etc.), Group (Jumping, Throwing, etc.), and Country**.
+
+However, despite its visual appeal, the dashboard has a **critical usability weakness** -  it is entirely dependent on user interaction to reveal any meaningful information. At a quick glance, a viewer is unable to draw any conclusions from the visualization, as no data values are displayed directly on the bubbles themselves.
+
+For example, if a user wanted to determine which country won the most total medals, they would need to hover over every single bubble within the top 3 ranking positions and manually tally the counts in their head. There are no summary statistics, no persistent labels, and no pre-aggregated views to support this basic analytical question. This design forces the user to become the engine of the analysis, sequentially exploring data point by data point which leads to **significant time inefficiency** and **cognitive overload**, particularly when dealing with 49 events each containing up to 8 ranked athletes
 
 **Reference:** [World Athletics Championships 2025, Tokyo — Tableau Public](https://public.tableau.com/app/profile/joelreed/viz/WorldAthleticsChampionships2025Tokyo/WorldAthleticsChampionships2025Tokyo)
 
@@ -51,6 +54,8 @@ Originally published on Tableau Public, the visualisation is designed to allow u
 - **Interactive data exploration:** The chart supports hover interactions that surface detailed athlete-level information, including name, country of representation, performance score, and ranking position (top 8 per event).
 
 - **Event categorisation:** All championship events are present within the visualisation and are logically grouped into broader event categories such as sprints, throwing events, and jumping events, facilitating high-level browsing.
+
+- **Breadth of coverage:** The visualization encompasses all 49 events across men's and women's disciplines, representing 53 nations in a single cohesive dashboard​
 
 ### Weaknesses
 
