@@ -95,6 +95,7 @@ The following improvements are proposed to enhance the analytical clarity and co
 
 
 The table below summarises the key differences between the original Tableau dashboard and our proposed visualisation.
+
 | Analytical Aspect | Original Visualisation | Proposed Redesign | Key Improvement |
 |------------------|-----------------------|------------------|----------------|
 | Primary Perspective | Event-centric (individual athlete results) | Country-centric (aggregated medal counts) | Shifts focus from micro-level exploration to macro-level comparison | 
