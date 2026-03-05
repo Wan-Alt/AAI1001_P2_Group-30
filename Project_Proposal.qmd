@@ -7,7 +7,7 @@ author:
   - name: "Choong Wan Qin (2402311)"
   - name: "Chi Wei Seng (2401493)"
   - name: "Koh Soon Chuan (2400951)"
-date: 06/03/2026
+date: 03/06/2026
 date-format: "D MMMM YYYY"
 format:
   html:
@@ -130,13 +130,11 @@ The following steps outline the end-to-end data engineering pipeline employed to
 
 4. Perform initial data cleaning to remove duplicate entries, handle missing values (`NA`), and ensure consistent formatting across all fields.
 
-5. Standardise and categorise athletic events into higher-level event group classifications (e.g., Sprints, Middle & Long Distance, Hurdles, Relays, Steeplechase, Race Walking, Jumping, Throwing, Combined Events) to facilitate grouped analysis.
+5. Athletic events are categorised into higher-level sport groups (e.g., Running, Jumping, Throwing, Combined) via a case_when() transformation applied within the R visualisation pipeline, as the raw dataset contains individual event names only.
 
 6. Validate and cross-reference the cleaned dataset against official championship results to ensure accuracy and completeness.
 
-7. Transform and reshape the data into the required structure for the target visualisation, including computing medal tallies by country, gender category, and event group.
-
-8. Export the processed dataset in CSV format for use within this Quarto Markdown (`.qmd`) visualisation pipeline.
+7. Export the cleaned dataset in CSV format for use within the Quarto Markdown (.qmd) visualisation pipeline. Medal tallies by country, gender category, and event group are subsequently computed within the R visualisation code using group_by(), summarise(), and expand.grid() transformations at render time.
 
 ### Dimensions of the Original Visualisation
 | Dimension | Description |
@@ -151,11 +149,11 @@ The following steps outline the end-to-end data engineering pipeline employed to
 
 | Axis  | Mapped Variable |
 |---|---|
-| X-Axis | Country (filtered to top countries by total medal count) |
+| X-Axis | Event Group (Running, Jumping, Throwing, Combined) |
 | Y-Axis | Number of Medals |
-| Facet / Panel | Event Group (Sprints, Hurdles, Jumping, Throwing, etc.) |
+| Facet Columns | Country (top 3 by total medal count) |
+| Facet Rows | Gender Category (Male, Female, Mixed)|
 | Fill Colour | Medal Type (Gold, Silver, Bronze) |
-| Colour Hue | Gender Category (Male, Female, Mixed) |
 
 ---
 
@@ -206,16 +204,16 @@ data <- data |>
 medals <- data |> filter(!is.na(MedalType))
 
 # ── 4. Top 3 countries by total medal count ───────────────────────────────────
-top3 <- medals |>
+top4 <- medals |>
   group_by(COUNTRY) |>
   summarise(Total = n(), .groups = "drop") |>
-  slice_max(Total, n = 3) |>
+  slice_max(Total, n = 4) |>
   pull(COUNTRY)
 
 # ── 5. Build complete grid: every event × every gender × every country ─────── 
 # This ensures all events appear even when a country won nothing in that event
 all_events <- medals |>
-  filter(COUNTRY %in% top3) |>
+  filter(COUNTRY %in% top4) |>
   pull(EVENT) |>
   unique() |>
   sort()
@@ -223,7 +221,7 @@ all_events <- medals |>
 all_genders <- c("Male", "Female", "Mixed")
 
 full_grid <- expand.grid(
-  COUNTRY     = top3,
+  COUNTRY     = top4,
   GenderLabel = all_genders,
   EVENT       = all_events,
   MedalType   = c("Gold", "Silver", "Bronze"),
@@ -232,7 +230,7 @@ full_grid <- expand.grid(
 
 # Aggregate actual medal counts
 actual <- medals |>
-  filter(COUNTRY %in% top3) |>
+  filter(COUNTRY %in% top4) |>
   group_by(COUNTRY, GenderLabel, EVENT, MedalType) |>
   summarise(Medals = n(), .groups = "drop")
 
@@ -248,7 +246,7 @@ plot_data <- full_grid |>
   mutate(
     MedalType   = factor(MedalType,   levels = c("Gold", "Silver", "Bronze")),
     GenderLabel = factor(GenderLabel, levels = c("Male", "Female", "Mixed")),
-    COUNTRY     = factor(COUNTRY,     levels = top3),
+    COUNTRY     = factor(COUNTRY,     levels = top4),
     EVENT       = factor(EVENT,       levels = all_events)
   )
 
@@ -259,8 +257,26 @@ medal_colours <- c(
   "Bronze" = "#CD7F32"
 ) # ── 7. Plot ───────────────────────────────────────────────────────────────────
 ggplot(plot_data,
-  aes(x = EventGroup, y = Medals, fill = MedalType)) +
-  geom_col(width = 0.6, position = "stack") +
+  aes(x = EventGroup, y = Medals, fill = MedalType)
+  ) +
+  geom_col(width = 0.7, position = "stack"
+  ) +
+  geom_text(
+    data = plot_data |>
+      group_by(COUNTRY, GenderLabel, EventGroup, MedalType) |>
+      summarise(Medals = sum(Medals), .groups = "drop"),
+    aes(label = ifelse(Medals > 0, Medals, "")),
+    position = position_stack(vjust = 0.5),
+    size = 2.5,
+    colour = "black"
+  ) +
+  # Vertical dashed lines to separate event groups
+  geom_vline(
+    xintercept = c(1.5, 2.5, 3.5),
+    colour = "#cccccc",
+    linewidth = 0.4,
+    linetype = "dashed"
+  ) +
   # Equal column widths: fixed scales so every panel has the same x-axis
   facet_grid(
     rows = vars(GenderLabel),
@@ -273,7 +289,7 @@ ggplot(plot_data,
   ) +
   labs(
     title = "World Athletics 2025 — Medals by Country",
-    subtitle = "Top 3 countries by total medal count",
+    subtitle = "Top 4 countries by total medal count",
     x = NULL,
     y = "Medals"
   ) +
@@ -290,8 +306,8 @@ ggplot(plot_data,
     panel.grid.minor   = element_blank(),
 
     # Panel spacing — adds visible gaps between facets
-    panel.spacing.x    = unit(1.2, "lines"),
-    panel.spacing.y    = unit(1.2, "lines"),
+    panel.spacing.x    = unit(1, "lines"),
+    panel.spacing.y    = unit(1, "lines"),
 
     # Black text
     text               = element_text(colour = "black"),
@@ -313,6 +329,8 @@ ggplot(plot_data,
     legend.title       = element_text(face = "bold", size = 9),
     legend.text        = element_text(size = 9),
     legend.key         = element_rect(fill = "white", colour = NA)
+    
+    
   )
 ```
 
@@ -336,7 +354,6 @@ ggplot(plot_data,
 
 - Mixed-category contribute to a smaller proportion of medals across the top three countries.
 
-*These findings will be documented and incorporated into the final analytical commentary once visualisation outputs are produced.*
 
 ---
 
