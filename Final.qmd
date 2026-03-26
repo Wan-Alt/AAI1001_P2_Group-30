@@ -230,7 +230,6 @@ library(countrycode)
 data <- read.csv("wac_2025_medalists.csv")
 
 # Convert country codes to full names
-# Uses IOC 3-letter codes (the standard used in athletics competitions)
 data <- data |>
   mutate(
     COUNTRY = countrycode(
